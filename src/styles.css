@@ -33,6 +33,7 @@
 .time-slot:disabled{color:#989087;background:#e5ded4;border-color:#e5ded4;text-decoration:line-through;cursor:not-allowed}
 .booking-hint,.booking-alert{font-size:.68rem;color:#6b6259;margin:8px 0}
 .booking-alert{color:#9b3025}
+.booking-demo-note{font-size:.65rem;line-height:1.45;color:#705a3d;margin:10px 0 0}
 .booking-submit{grid-column:1/-1;justify-self:start;min-width:220px;cursor:pointer}
 .booking-submit:disabled{opacity:.55;cursor:not-allowed;transform:none}
 .booking-summary{border-left:1px solid rgba(65,55,44,.22);padding-left:26px}

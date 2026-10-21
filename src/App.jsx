@@ -77,6 +77,7 @@ function BookingSection({ open, onClose }) {
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [catalogError, setCatalogError] = useState('');
   const [availabilityError, setAvailabilityError] = useState('');
+  const [demoAvailability, setDemoAvailability] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [confirmation, setConfirmation] = useState(null);
@@ -100,6 +101,7 @@ function BookingSection({ open, onClose }) {
       setSlots([]);
       setSelectedTime('');
       setAvailabilityError('');
+      setDemoAvailability(false);
       setLoadingSlots(false);
       return undefined;
     }
@@ -111,17 +113,18 @@ function BookingSection({ open, onClose }) {
       try {
         const query = new URLSearchParams({ date: form.date, barberId: form.barberId, serviceId: form.serviceId });
         const response = await fetch(`/api/availability?${query}`);
-        if (!response.ok) throw new Error('Could not load availability.');
         const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Could not load availability.');
         if (active) {
           setSlots(data.slots);
           setAvailabilityError('');
+          setDemoAvailability(data.demo === true);
           setSelectedTime((current) => (
             data.slots.some((slot) => slot.time === current && slot.available) ? current : ''
           ));
         }
-      } catch {
-        if (active) setAvailabilityError('Live availability could not be loaded. Try again shortly.');
+      } catch (error) {
+        if (active) setAvailabilityError(error.message || 'Live availability could not be loaded. Try again shortly.');
       } finally {
         if (active && firstLoad) setLoadingSlots(false);
         firstLoad = false;
@@ -168,7 +171,7 @@ function BookingSection({ open, onClose }) {
 
   async function handleSubmit(event) {
     event.preventDefault();
-    if (!selectedTime) return;
+    if (!selectedTime || demoAvailability) return;
     setSubmitting(true);
     setSubmitError('');
     setConfirmation(null);
@@ -321,7 +324,7 @@ function BookingSection({ open, onClose }) {
                     <div className="booking-time-field">
                       <div className="booking-time-heading">
                         <span>Available times</span>
-                        <small>Refreshes every 30 seconds</small>
+                        <small>{demoAvailability ? 'Example times · not live' : 'Refreshes every 30 seconds'}</small>
                       </div>
                       {!form.date ? (
                         <p className="booking-hint">Choose a date to see live availability.</p>
@@ -347,6 +350,7 @@ function BookingSection({ open, onClose }) {
                       ) : (
                         <p className="booking-hint">No times are available. Choose another date or barber.</p>
                       )}
+                      {demoAvailability && <p className="booking-demo-note" role="status">Example times only. Live booking requires a connected schedule.</p>}
                     </div>
                   </div>
                 </div>
@@ -376,6 +380,7 @@ function BookingSection({ open, onClose }) {
                     </aside>
                   </div>
                   <p className="booking-payment-note">Payment is handled at the shop.</p>
+                  {demoAvailability && <p className="booking-demo-note" role="status">This is a preview only. Appointment confirmation is disabled until live booking storage is configured.</p>}
                 </div>
               )}
 
@@ -385,8 +390,8 @@ function BookingSection({ open, onClose }) {
                 {step < 2 ? null : step === 2 ? (
                   <button className="button booking-submit" disabled={!selectedTime} onClick={() => setStep(3)} type="button">Continue</button>
                 ) : (
-                  <button className="button booking-submit" disabled={!selectedTime || submitting || loadingCatalog} onClick={handleSubmit} type="button">
-                    {submitting ? 'Confirming…' : 'Confirm appointment'}
+                  <button className="button booking-submit" disabled={!selectedTime || demoAvailability || submitting || loadingCatalog} onClick={handleSubmit} type="button">
+                    {submitting ? 'Confirming…' : demoAvailability ? 'Demo only' : 'Confirm appointment'}
                   </button>
                 )}
               </footer>

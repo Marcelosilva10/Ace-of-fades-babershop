@@ -17,3 +17,7 @@ npm start
 ```
 
 `npm start` serve o build e a API na mesma porta. Para manter reservas em produção, use um host Node com disco persistente. A aplicação React está em `src/`.
+
+## Vercel
+
+The `api/` directory contains Vercel serverless routes for the service catalog, availability, and bookings. Without a database, the page shows clearly labeled example times and disables confirmation. To enable real reservations, create an Upstash Redis database and add `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` to the Vercel project's environment variables, then redeploy. `.data/bookings.json` is only for local development and is not persistent storage on Vercel.
